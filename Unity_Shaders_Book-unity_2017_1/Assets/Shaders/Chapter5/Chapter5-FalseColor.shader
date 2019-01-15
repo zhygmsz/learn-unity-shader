@@ -34,11 +34,11 @@
 				o.color = fixed4(v.texcoord1.xy, 0.0, 1.0);
 				
 				// Visualize fractional part of the first set texcoord
-				o.color = frac(v.texcoord);
+				//o.color = frac(v.texcoord);
 				if (any(saturate(v.texcoord) - v.texcoord)) {
-					o.color.b = 0.5;
+					//o.color.b = 0.5;
 				}
-				o.color.a = 1.0;
+				//o.color.a = 1.0;
 				
 				// Visualize fractional part of the second set texcoord
 				o.color = frac(v.texcoord1);
@@ -49,6 +49,8 @@
 				
 				// Visualize vertex color
 //				o.color = v.color;
+
+				
 				
 				return o;
 			}
