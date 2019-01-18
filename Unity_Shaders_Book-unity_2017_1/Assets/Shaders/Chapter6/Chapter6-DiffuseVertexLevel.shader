@@ -31,7 +31,7 @@
 				o.pos = UnityObjectToClipPos(v.vertex);
 				
 				// Get ambient term
-				fixed3 ambient = UNITY_LIGHTMODEL_AMBIENT.xyz;
+				fixed3 ambient = UNITY_LIGHTMODEL_AMBIENT.xyz * _Diffuse.rgb;
 				
 				// Transform the normal from object space to world space
 				fixed3 worldNormal = normalize(mul(v.normal, (float3x3)unity_WorldToObject));
