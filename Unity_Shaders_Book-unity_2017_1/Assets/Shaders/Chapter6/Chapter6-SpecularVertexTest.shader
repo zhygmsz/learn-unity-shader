@@ -1,10 +1,11 @@
-Shader "Unity Shaders Book/Chapter 6/Diffuse Vertex Test"
+Shader "Unity Shaders Book/Chapter 6/Specular Vertex Test"
 {
     Properties
     {
         _Diffuse ("Diffuse", Color) = (1, 1, 1, 1)
+        _Specular ("Specular", Color) = (1, 1, 1, 1)
+        _Gloss("Gloss", Range(8, 256)) = 20
     }
-
     SubShader
     {
         Pass
@@ -19,6 +20,8 @@ Shader "Unity Shaders Book/Chapter 6/Diffuse Vertex Test"
             #include "Lighting.cginc"
 
             fixed4 _Diffuse;
+            fixed4 _Specular;
+            float _Gloss;
 
             struct a2v
             {
@@ -29,13 +32,8 @@ Shader "Unity Shaders Book/Chapter 6/Diffuse Vertex Test"
             struct v2f
             {
                 float4 pos : SV_POSITION;
-                float3 color : COLOR;
+                fixed3 color : COLOR;
             };
-
-            //世界空间下，法线(normal)与光照向量(lightdir)的数量积
-            //法线从Render组件传递到顶点着色器，转换到世界空间下
-            //光照向量（顶点到光源的方向），区分不同类型的光源，目前只考虑了方向光，点光源和聚光灯怎么计算？
-            //这些计算细则都被unity包装在了UnityWorldSpaceLightDir方法里
 
             v2f vert(a2v v)
             {
@@ -44,14 +42,20 @@ Shader "Unity Shaders Book/Chapter 6/Diffuse Vertex Test"
                 o.pos = UnityObjectToClipPos(v.vertex);
 
                 fixed3 ambient = UNITY_LIGHTMODEL_AMBIENT.xyz;
-                //给环境光也应用上材质的漫反射系数，会使效果更暗，这么做有什么应用场景吗？
 
                 fixed3 worldNormal = normalize(mul(v.normal, (float3x3)unity_WorldToObject));
-                fixed3 worldLight = normalize(_WorldSpaceLightPos0.xyz);
-                fixed3 diffuse = _LightColor0.rgb * _Diffuse.rgb * saturate(dot(worldNormal, worldLight));
-                //_Diffuse.rgb与其叫做材质的漫反射颜色，倒不如叫做漫反射系数更好，高光同理
+                fixed3 worldLightDir = normalize(_WorldSpaceLightPos0.xyz);
 
-                o.color = ambient + diffuse;
+                fixed3 diffuse = _LightColor0.rgb * _Diffuse.rgb * saturate(dot(worldNormal, worldLightDir));
+
+                fixed3 reflectDir = normalize(reflect(-worldLightDir, worldNormal));
+                float3 worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
+                fixed3 viewDir = normalize(_WorldSpaceCameraPos.xyz - worldPos);
+
+                float specularFactor = pow(saturate(dot(reflectDir, viewDir)), _Gloss);
+                fixed3 specular = _LightColor0.rgb * _Specular.rgb * specularFactor;
+
+                o.color = ambient + diffuse + specular;
 
                 return o;
             }
@@ -60,9 +64,9 @@ Shader "Unity Shaders Book/Chapter 6/Diffuse Vertex Test"
             {
                 return fixed4(i.color, 1.0);
             }
-            
+
             ENDCG
         }
     }
-    FallBack "Diffuse"
+    FallBack "Specular"
 }
