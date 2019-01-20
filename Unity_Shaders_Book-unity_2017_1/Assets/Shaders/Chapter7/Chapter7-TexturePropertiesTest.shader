@@ -43,18 +43,19 @@ Shader "Unity Shaders Book/Chapter 7/Texture Properties Test"
                 o.position = UnityObjectToClipPos(v.vertex);
                 o.uv = TRANSFORM_TEX(v.texcoord, _MainTex);
 
-                //不能再顶点着色器阶段采样纹理，即使是5.0
-                //o.color = tex2D(_MainTex, o.uv).xyz;
+                //原则上，不能在顶点着色器阶段采样纹理
+                //但可以选用高级的shadermodel，并选用tex2Dlod方法实现
+                o.color = tex2Dlod(_MainTex, float4(o.uv, 0, 0)).xyz;
 
                 return o;
             }
 
             fixed4 frag(v2f i) : SV_Target
             {
-                fixed4 c = tex2D(_MainTex, i.uv);
-                return fixed4(c.rgb, 1.0);
+                //fixed4 c = tex2D(_MainTex, i.uv);
+                //return fixed4(c.rgb, 1.0);
 
-                //return fixed4(i.color, 1.0);
+                return fixed4(i.color, 1.0);
             }
 
             ENDCG
