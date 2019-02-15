@@ -45,7 +45,12 @@ Shader "Unity Shaders Book/Chapter 7/Texture Properties Test"
 
                 //原则上，不能在顶点着色器阶段采样纹理
                 //但可以选用高级的shadermodel，并选用tex2Dlod方法实现
-                o.color = tex2Dlod(_MainTex, float4(o.uv, 0, 0)).xyz;
+                o.color = tex2Dlod(_MainTex, float4(o.uv, 0, 0)).rgb;
+
+                //在顶点着色器中采样纹理的四个顶点颜色后，然后在光栅化时插值，最后得到的颜色是深黄色
+                //验证这一想法，过程如下
+                //获取纹理中四块颜色，并平均出一个新颜色，因为这是正交投影，并且正对着摄像机，以这种方式模拟光栅化的插值
+                //试试看是否为同样的深黄色
 
                 return o;
             }
