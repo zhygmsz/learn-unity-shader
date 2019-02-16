@@ -51,6 +51,7 @@ Shader "Unity Shaders Book/Chapter 7/Texture Properties Test"
                 //验证这一想法，过程如下
                 //获取纹理中四块颜色，并平均出一个新颜色，因为这是正交投影，并且正对着摄像机，以这种方式模拟光栅化的插值
                 //试试看是否为同样的深黄色
+                //这一过程在片元着色器中实现更方便
 
                 return o;
             }
@@ -60,7 +61,14 @@ Shader "Unity Shaders Book/Chapter 7/Texture Properties Test"
                 //fixed4 c = tex2D(_MainTex, i.uv);
                 //return fixed4(c.rgb, 1.0);
 
-                return fixed4(i.color, 1.0);
+                fixed4 c1 = tex2D(_MainTex, float2(0.25, 0.25));
+                fixed4 c2 = tex2D(_MainTex, float2(0.25, 0.75));
+                fixed4 c3 = tex2D(_MainTex, float2(0.75, 0.75));
+                fixed4 c4 = tex2D(_MainTex, float2(0.75, 0.25));
+                fixed4 c = (c1 + c2 + c3 + c4) / 4;
+
+                //return fixed4(i.color, 1.0);
+                return fixed4(c.rgb, 1.0);
             }
 
             ENDCG
