@@ -1,8 +1,8 @@
-﻿Shader "Unity Shaders Book/Chapter 8/Alpha Blending With ZWrite" {
+﻿Shader "Unity Shaders Book/Chapter 8/Alpha Blend With ZWrite" {
 	Properties {
-		_Color ("Color Tint", Color) = (1, 1, 1, 1)
+		_Color ("Color Tint", Color) = (0, 1, 1, 1)
 		_MainTex ("Main Tex", 2D) = "white" {}
-		_AlphaScale ("Alpha Scale", Range(0, 1)) = 1
+		_AlphaScale ("Alpha Scale", Range(0, 1)) = 0.7
 	}
 	SubShader {
 		Tags {"Queue"="Transparent" "IgnoreProjector"="True" "RenderType"="Transparent"}

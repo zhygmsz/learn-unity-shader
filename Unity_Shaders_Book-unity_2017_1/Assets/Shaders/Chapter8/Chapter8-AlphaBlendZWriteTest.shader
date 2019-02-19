@@ -1,4 +1,4 @@
-Shader "Unity Shaders Book/Chapter 8/Alpha Blend Test"
+Shader "Unity Shaders Book/Chapter 8/Alpha Blend With ZWrite Test"
 {
     Properties
     {
@@ -10,6 +10,13 @@ Shader "Unity Shaders Book/Chapter 8/Alpha Blend Test"
     SubShader
     {
         Tags { "Queue" = "Transparent" "IgnoreProjector" = "True" "RenderType" = "Transparent" }
+
+        Pass
+        {
+            ZWrite On
+            ColorMask 0
+        }
+
         Pass
         {
             Tags { "LightMode" = "ForwardBase" }
