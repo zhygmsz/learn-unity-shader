@@ -13,10 +13,10 @@
 			ZWrite Off
 			
 //			// Normal
-//			Blend SrcAlpha OneMinusSrcAlpha
+			//Blend SrcAlpha OneMinusSrcAlpha
 //			
 //			// Soft Additive
-//			Blend OneMinusDstColor One
+			//Blend OneMinusDstColor One
 //			
 //			// Multiply
 			Blend DstColor Zero
@@ -38,7 +38,7 @@
 //			Blend One OneMinusSrcColor
 //			
 //			// Linear Dodge
-			Blend One One
+			//Blend One Zero
 			
 			CGPROGRAM
 			
