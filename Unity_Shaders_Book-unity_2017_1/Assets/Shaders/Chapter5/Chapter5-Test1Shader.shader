@@ -41,7 +41,16 @@ shader "Unity Shaders Book/Chapter 5/Test1 Shader"
             {
                 fixed3 c = i.color;
                 c *= _Color.rgb;
-                return fixed4(c, 1.0);
+                //return fixed4(c, 1.0);
+
+                //测试_WorldSpaceLightPos0.xyz变量的值，是否是平行光的方向的相反数
+                //最后查看官网得知，_WorldSpaceLightPos0.xyz存储的是世界空间下平行光的方向，并不是之前以为的方向相反
+                //现在的疑问是：通过旋转矩阵的方式求得的三个基向量，和求由模型空间到切线空间的矩阵方式对不上了？
+                //总是相反的？应该是哪里出了岔子，或者是某一个节点出了错误
+                //而且对于unity检视面板上的x轴30旋转，如何把30代入旋转矩阵，是30还是-30？
+                float y = _WorldSpaceLightPos0.y + 0.5;
+                float z = _WorldSpaceLightPos0.z - 0.866;
+                return fixed4(0, y, z, 1);
             }
 
             ENDCG
