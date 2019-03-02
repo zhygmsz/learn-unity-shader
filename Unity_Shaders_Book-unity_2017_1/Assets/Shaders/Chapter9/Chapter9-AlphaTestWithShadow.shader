@@ -81,4 +81,8 @@
 		}
 	} 
 	FallBack "Transparent/Cutout/VertexLit"
+	//透明度测试的逐顶点光照shader
+	//内的ShadowCaster Pass里在计算深度图或阴影映射纹理时，会考虑透明度测试，并且变量为_Cutoff。
+	//所以，以上述shader作为FallBack的shader内得有一个_Cutoff变量。
+	//FallBack "VertexLit"
 }
