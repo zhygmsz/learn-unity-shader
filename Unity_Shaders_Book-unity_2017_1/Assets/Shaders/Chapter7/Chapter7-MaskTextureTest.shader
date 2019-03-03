@@ -83,6 +83,7 @@ Shader "Unity Shaders Book/Chapter 7/Mask Texture Test"
                 fixed3 diffuse = _LightColor0.rgb * albedo * saturate(dot(tangentNormal, tangentLightDir));
 
                 fixed3 halfDir = normalize(tangentLightDir + tangentViewDir);
+                //逐像素的控制高光
                 fixed specularMask = tex2D(_SpecularMask, i.uv.xy).r * _SpecularScale;
                 fixed3 specular = _LightColor0.rgb * _Specular.rgb * pow(saturate(dot(tangentNormal, halfDir)), _Gloss) * specularMask;
 
