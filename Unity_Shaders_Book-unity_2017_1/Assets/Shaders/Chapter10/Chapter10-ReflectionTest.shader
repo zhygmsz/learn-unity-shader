@@ -77,9 +77,9 @@ Shader "Unity Shaders Book/Chapter 10/Reflection Test"
                 fixed3 diffuse = _LightColor0.rgb * _Color.rgb * saturate(dot(worldLightDir, worldNormal));
 
                 //最初以为是光线在该点出的反射光线方向来采样立方体纹理，所以认为这个计算过程是错的
-                //后来理解了，我们在物体表面看到的已经是反射过的颜色了
-                //或者换句话说，我们以该点处的观察方向出发，能看到的是立方体纹理中哪个点的反射。
-                //这里的反射说的并不是该点处的反射，而是立方体纹理上的反射光线。
+                //后来理解了，我们在物体表面看到的已经是反射过的颜色了，就是物体表面反射的空间环境
+                //周围空间的某个点发出的光线，射到当前顶点上，反射到我们的观察者这里，于是乎看到了物体表面的颜色。
+                //由于反射定律，可以倒着推过去，由观察方向反推到入射光线，然后再采样立方体纹理，得到空间颜色。
                 fixed3 worldRefl = reflect(-worldViewDir, worldNormal);
                 fixed3 reflection = texCUBE(_Cubemap, worldRefl).rgb * _ReflectColor.rgb;
 
