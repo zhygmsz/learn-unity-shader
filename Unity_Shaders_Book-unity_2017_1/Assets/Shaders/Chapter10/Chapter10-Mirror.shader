@@ -32,6 +32,9 @@
 				o.uv = v.texcoord;
 				// Mirror needs to filp x
 				o.uv.x = 1 - o.uv.x;
+
+				//尝试在顶点着色器里采样纹理，并在片元着色器里插值颜色。
+				//因为这是一个quad，只有两个三角形，四个独立顶点，所以只有四个颜色。没什么效果可言。
 				
 				return o;
 			}
