@@ -59,7 +59,7 @@ Shader "Unity Shaders Book/Chapter 7/Normal Map In Tangent Space Test"
                 o.uv.xy = v.texcoord.xy * _MainTex_ST.xy + _MainTex_ST.zw;
                 o.uv.zw = v.texcoord.xy * _BumpMap_ST.xy + _BumpMap_ST.zw;
 
-                //同时垂直于发现和切线的向量有两个，由v.tangent.w来决定是哪个
+                //同时垂直于法线和切线的向量有两个，由v.tangent.w来决定是哪个
                 //那可以得出，v.tangent.w分量是1或-1
                 //互相垂直的两个单位向量叉乘后得到的新向量，仍是单位向量
                 float3 binormal = cross(normalize(v.normal), normalize(v.tangent.xyz)) * v.tangent.w;
