@@ -46,6 +46,7 @@
 				float4 TtoW0 : TEXCOORD2;  
 			    float4 TtoW1 : TEXCOORD3;  
 			    float4 TtoW2 : TEXCOORD4; 
+				fixed3 worldNormal : TEXCOORD5;
 			};
 			
 			v2f vert (a2v v) {
@@ -65,6 +66,8 @@
 				o.TtoW0 = float4(worldTangent.x, worldBinormal.x, worldNormal.x, worldPos.x);  
 				o.TtoW1 = float4(worldTangent.y, worldBinormal.y, worldNormal.y, worldPos.y);  
 				o.TtoW2 = float4(worldTangent.z, worldBinormal.z, worldNormal.z, worldPos.z);  
+
+				o.worldNormal = worldNormal;
 				
 				return o;
 			}
@@ -90,13 +93,22 @@
 				//所以看起来该立方体像是透明的一样，完全没有遮挡后面的物体，其实是和后面的物体同色了而已，纯属视觉欺骗
 				//当_Distortion的值逐步增加时，offset也会逐步增大，随之采样_RefractionTex出来的颜色值也会表现的更偏差，这个偏差看起来就是玻璃折射后面的物体效果了
 				//当偏差加大到一定程度时，折射表现会显现出法线轮廓，这是因为偏差值完全是依赖法线的。
-				
 
 				// Convert the normal to world space
 				bump = normalize(half3(dot(i.TtoW0.xyz, bump), dot(i.TtoW1.xyz, bump), dot(i.TtoW2.xyz, bump)));
 				fixed3 reflDir = reflect(-worldViewDir, bump);
+				//fixed3 worldNormal = normalize(i.worldNormal);
+				//fixed3 reflDir = reflect(-worldViewDir, worldNormal);
 				fixed4 texColor = tex2D(_MainTex, i.uv.xy);
 				fixed3 reflCol = texCUBE(_Cubemap, reflDir).rgb * texColor.rgb;
+
+				//当_RefractAmount等于0时，即为只有反射，没有折射
+				//通过观察向量和法线反推出入射光线，再用入射光线对立方体纹理采样，模拟反射效果。
+				//_RefractAmount变量没有作用
+				//反射（采样立方体纹理）颜色和主纹理采样出来的颜色做了个相乘后，成为最终颜色。
+				//相当于反射颜色里融合了主纹理颜色
+
+				//最后的最后，反射（法线也是采样自毫不相关的纹理）和（模拟）折射效果插值到一起去。
 				
 				fixed3 finalColor = reflCol * (1 - _RefractAmount) + refrCol * _RefractAmount;
 				
