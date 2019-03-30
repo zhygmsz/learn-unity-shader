@@ -105,5 +105,7 @@
 			ENDCG
 		}
 	}
+	//同样的水波动画，为了实现顶点动画的阴影，把forwardbase改成了不透明物体的模式
+	//随即fallback也修改成内置的不透明物体shader，内涵一个shadercaster的pass
 	FallBack "VertexLit"
 }
