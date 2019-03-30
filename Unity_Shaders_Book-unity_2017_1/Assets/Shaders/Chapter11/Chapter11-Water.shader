@@ -80,5 +80,7 @@ Shader "Unity Shaders Book/Chapter 11/Water" {
 			ENDCG
 		}
 	}
+	//水波动画在forwardbase理设置的是半透明物体渲染模式，所以fallabck设置了transparent里的。
+	//但它没有shadercaster的pass
 	FallBack "Transparent/VertexLit"
 }
