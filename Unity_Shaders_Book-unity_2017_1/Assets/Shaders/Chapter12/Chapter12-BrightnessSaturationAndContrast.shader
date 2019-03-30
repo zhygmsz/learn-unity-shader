@@ -1,4 +1,6 @@
 ﻿Shader "Unity Shaders Book/Chapter 12/Brightness Saturation And Contrast" {
+	//属性区域仅仅是为了显示在材质属性面板上的，通过定义和pass里字段同名的属性，来暴露给inspector面板，方便调试
+	//当在inspector上调整参数时，会自动修改pass里的同名字段，进而改变shader效果。
 	Properties {
 		_MainTex ("Base (RGB)", 2D) = "white" {}
 		_Brightness ("Brightness", Float) = 1
