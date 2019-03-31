@@ -60,13 +60,13 @@
 				//再经过插值可以整体调整画面的饱和度。
 				fixed luminance = 0.2125 * renderTex.r + 0.7154 * renderTex.g + 0.0721 * renderTex.b;
 				fixed3 luminanceColor = fixed3(luminance, luminance, luminance);
-				//finalColor = lerp(luminanceColor, finalColor, _Saturation);
+				finalColor = lerp(luminanceColor, finalColor, _Saturation);
 				
 				// Apply contrast
 				//对比度概念，是颜色的差异程度。(0.5, 0.5, 0.5)是对比度最低。
 				//再经过插值可以整体调整画面的对比度。
 				fixed3 avgColor = fixed3(0.5, 0.5, 0.5);
-				//finalColor = lerp(avgColor, finalColor, _Contrast);
+				finalColor = lerp(avgColor, finalColor, _Contrast);
 
 				//总结，饱和度和对比度都是当前RGB三分量值偏离这个概念原点的程度，而饱和度的原点需要RGB三分量辅助经验系数来构造，而对比度则直接用常量值。
 				//再用系数插值这个概念原点和当前RGB三分量，可以整体的调整RGB三分量的这个概念值。达到画面效果的整体概念。
