@@ -13,15 +13,22 @@ public class GaussianBlur : PostEffectsBase {
 		}  
 	}
 
-	// Blur iterations - larger number means more blur.
-	[Range(0, 4)]
+    // Blur iterations - larger number means more blur.
+    //默认值为0，表示没有模糊。
+    //当blurSpread和downSample都为默认值时，该值越大，得到的模糊效果越好，但达到一定程度后，画面就失去了模糊的意义，变得完全看不清。
+    [Range(0, 4)]
 	public int iterations = 3;
 	
 	// Blur spread for each iteration - larger value means more blur
+    //默认值为1，表示原始的高斯模糊算子覆盖的纹素
+    //值偏大时，画面上会有条纹，是因为模糊算子覆盖的纹素间距太大，纹素的差异性增大，相当于给模糊后的结果掺了杂质。
 	[Range(0.2f, 3.0f)]
 	public float blurSpread = 0.6f;
-	
-	[Range(1, 8)]
+
+    //默认值为1，表示不降采样。
+    //当iterations和blurSpread都为默认值时，该值增大，也会得到模糊效果。但这种模糊的本质是图片小尺寸被拉伸到大尺寸后的效果，有锯齿。
+    //值在增大过程中会损害模糊效果，2或3，尽量为2.
+    [Range(1, 8)]
 	public int downSample = 2;
 	
 	/// 1st edition: just apply blur
@@ -73,7 +80,9 @@ public class GaussianBlur : PostEffectsBase {
 			Graphics.Blit(src, buffer0);
 
 			for (int i = 0; i < iterations; i++) {
-				material.SetFloat("_BlurSize", 1.0f + i * blurSpread);
+                //模糊多次的时候，迭代传播范围。_BlurSize在shader里的含义是模糊算子内某个格子的uv坐标偏移。
+                //随着多次模糊，对于当前纹素来说的模糊算子覆盖的纹素也在向外传递。效果上更均匀，细致。
+                material.SetFloat("_BlurSize", 1.0f + i * blurSpread);
 
 				RenderTexture buffer1 = RenderTexture.GetTemporary(rtW, rtH, 0);
 

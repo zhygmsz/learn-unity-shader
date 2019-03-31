@@ -39,6 +39,8 @@
 			half2 uv = v.texcoord;
 			
 			o.uv[0] = uv;
+			//_BlurSize是额外引入的模糊传播范围，当_BlurSize为1,时，表示当前纹素的X方向上，左1，左2，右1，右2。
+			//当_BlurSize为2时，表示当前纹素的X方向上，左2，左4，右2，右4。
 			o.uv[1] = uv + float2(_MainTex_TexelSize.x * 1.0, 0.0) * _BlurSize;
 			o.uv[2] = uv - float2(_MainTex_TexelSize.x * 1.0, 0.0) * _BlurSize;
 			o.uv[3] = uv + float2(_MainTex_TexelSize.x * 2.0, 0.0) * _BlurSize;
@@ -48,6 +50,8 @@
 		}
 		
 		fixed4 fragBlur(v2f i) : SV_Target {
+			//事先计算好的5x5高斯模糊算子，再拆分成两个一维的5长度的算子，算出结果后。
+			//归一化后，去除相同的值（算子具有对称性），最后得到三个（维护为5，具有对称性，所以去除相同值后，只剩下3个值）不同的值。
 			float weight[3] = {0.4026, 0.2442, 0.0545};
 			
 			fixed3 sum = tex2D(_MainTex, i.uv[0]).rgb * weight[0];
