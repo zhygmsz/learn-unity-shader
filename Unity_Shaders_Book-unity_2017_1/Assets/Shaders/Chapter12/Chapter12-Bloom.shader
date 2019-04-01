@@ -38,6 +38,11 @@
 		fixed4 fragExtractBright(v2f i) : SV_Target {
 			fixed4 c = tex2D(_MainTex, i.uv);
 			fixed val = clamp(luminance(c) - _LuminanceThreshold, 0.0, 1.0);
+
+			//复盘提取亮度纹理这一步骤，在Bloom.cs里关闭后续的模糊和叠加原图。
+			//在src上应用该shader的第一pass，绘制在屏幕上
+			//屏幕上的图片但凡是黑色的，则说明亮度阈值不达标
+			//不为灰色的，因为原图亮度减去了亮度阈值，所以整体上偏灰（亮度变暗导致的，纯灰色的亮度为0）
 			
 			return c * val;
 		}
