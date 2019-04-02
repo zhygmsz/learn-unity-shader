@@ -40,7 +40,7 @@
 		
 		Pass {
 			Blend SrcAlpha OneMinusSrcAlpha
-			ColorMask RGB
+			//ColorMask RGB
 			
 			CGPROGRAM
 			
@@ -50,17 +50,17 @@
 			ENDCG
 		}
 		
-		Pass {   
-			Blend One Zero
-			ColorMask A
+		//Pass {   
+		//	Blend One Zero
+		//	ColorMask A
 			   	
-			CGPROGRAM  
+		//	CGPROGRAM  
 			
-			#pragma vertex vert  
-			#pragma fragment fragA
+		//	#pragma vertex vert  
+		//	#pragma fragment fragA
 			  
-			ENDCG
-		}
+		//	ENDCG
+		//}
 	}
  	FallBack Off
 }
