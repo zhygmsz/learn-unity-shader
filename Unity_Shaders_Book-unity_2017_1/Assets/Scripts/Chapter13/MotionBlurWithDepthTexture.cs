@@ -38,6 +38,8 @@ public class MotionBlurWithDepthTexture : PostEffectsBase {
 		if (material != null) {
 			material.SetFloat("_BlurSize", blurSize);
 
+			//因为这里的VP矩阵和逆矩阵都是针对camera的，所以该像素的速度差只能捕捉到摄像机移动的情况
+			//假如要运动模糊一个物体，需要把矩阵换成对应物体的
 			material.SetMatrix("_PreviousViewProjectionMatrix", previousViewProjectionMatrix);
 			Matrix4x4 currentViewProjectionMatrix = camera.projectionMatrix * camera.worldToCameraMatrix;
 			Matrix4x4 currentViewProjectionInverseMatrix = currentViewProjectionMatrix.inverse;
