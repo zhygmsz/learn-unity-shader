@@ -61,6 +61,15 @@ public class FogWithDepthTexture : PostEffectsBase {
 			Vector3 topLeft = cameraTransform.forward * near + toTop - toRight;
 			float scale = topLeft.magnitude / near;
 
+            //该scale是一个比值，等同于len / d。len是像素对应的3D场景中的点距离摄像机的距离，d是点的线性深度值
+            //len / d = scale，len = scale * d
+            //topLeft单位化后表示方向 len * topLeft则表示像素对应的3D场景中的点距离摄像机的方位（以摄像机为原点的一个坐标偏移）
+            //scale * d * topLeft就是以上坐标偏移
+            //所以下文中的scale * topLeft并不奇怪，只是提前计算好了，并且不受光栅化插值影响
+            //最后在shader里，只需要topLeft这个向量 * d（点的线性深度值，采样深度纹理得到）即可。
+
+            //该节使用深度纹理重建世界坐标，前提是摄像机使用了透视投影
+
 			topLeft.Normalize();
 			topLeft *= scale;
 

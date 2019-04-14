@@ -41,6 +41,8 @@
 			#endif
 			
 			int index = 0;
+			//在OpenGL下，纹理坐标原点在左下角，根据纹理坐标判定当前顶点是哪一个
+			//以下顺序和C#里设置的一致
 			if (v.texcoord.x < 0.5 && v.texcoord.y < 0.5) {
 				index = 0;
 			} else if (v.texcoord.x > 0.5 && v.texcoord.y < 0.5) {
@@ -50,12 +52,25 @@
 			} else {
 				index = 3;
 			}
+			//上文中的是OpenGL下的纹理坐标，左下角为原点，上述判定刚好符合既定顺序
+
+			/*
+			//在C#层，已经给摄像机的近裁剪平面的四个点定义了顺序，如下
+			3——2
+			|  |
+			0——1
+			*/
+
+			//可在DX下的纹理坐标，却是左上角为原点。需要重新对纹理坐标判定给出0,1,2,3
+			//巧的是，在这个既定顺序下，DX的刚好是 3 - OpenGL的
 
 			#if UNITY_UV_STARTS_AT_TOP
 			if (_MainTex_TexelSize.y < 0)
 				index = 3 - index;
 			#endif
 			
+			//interpolatedRay的含义是，从【摄像机】到【片元着色器内的当前片元对应的3D场景中的点】的方向的单位向量 * scale
+			//提前计算了scale，在后续计算中，只需要 * depth即可
 			o.interpolatedRay = _FrustumCornersRay[index];
 				 	 
 			return o;
