@@ -39,9 +39,14 @@
 				v2f o;
 				
 				float4 pos = float4(UnityObjectToViewPos(v.vertex), 1.0);
-				float3 normal = mul((float3x3)UNITY_MATRIX_IT_MV, v.normal);  
+				float3 normal = mul((float3x3)UNITY_MATRIX_IT_MV, v.normal);
+				//法线的z值统一设置成-0.5，效果上是让法线尽可能的沿着观察方向倾斜
+				//避免出现背面顶点经过法线方向扩张后，遮挡住正面顶点
 				normal.z = -0.5;
 				pos = pos + float4(normalize(normal), 0) * _Outline;
+				//如果不扩张背面顶点的话，正面会全部遮挡住背面
+				//所以用轮廓线颜色渲染背面顶点，并刻意沿着法线方向扩张了顶点
+				//扩张的目的是不至于被正面顶点完全遮挡住，那些被扩张出来的背面顶点，就在整体效果上表现为轮廓线
 				o.pos = mul(UNITY_MATRIX_P, pos);
 				
 				return o;
