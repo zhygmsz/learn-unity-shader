@@ -72,12 +72,24 @@
 			float linearDepth = LinearEyeDepth(SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, i.uv_depth));
 			float3 worldPos = _WorldSpaceCameraPos + linearDepth * i.interpolatedRay.xyz;
 			
+			//float2(_FogXSpeed, _FogYSpeed)即是速度，也是采样变化方向，表现上为雾的流动方向
 			float2 speed = _Time.y * float2(_FogXSpeed, _FogYSpeed);
+			//_NoiseAmount过大导致雾明显分块
 			float noise = (tex2D(_NoiseTex, i.uv + speed).r - 0.5) * _NoiseAmount;
-					
+
+			//和13章节不同的地方就是噪声，采样噪声纹理用的是采样主纹理的uv
+			//noise = 0;
+
+			//计算雾强度的公式里，分子是雾高度上限 - y坐标。
+			//如果距离过高，则值为负数，最后的强度值为0，在后面插值时表现为纯粹主纹理（屏幕图像自身）颜色
+			//如果距离过低，则值为正数，并且比较大，最后会是1，在后面插值时表现为纯粹的雾颜色
 			float fogDensity = (_FogEnd - worldPos.y) / (_FogEnd - _FogStart); 
+			//_FogDensity，手动调整的整体强度，值过大，则会变相的拉高_FodEnd，使得雾线提高
+			//noise，从噪声采样的来的变数，并且uv坐标在随时间变化
 			fogDensity = saturate(fogDensity * _FogDensity * (1 + noise));
 			
+			//雾的稀薄分散是引入了噪声，对雾强度做了一次加工
+			//雾的流动，是采样噪声纹理的uv坐标随时间变化
 			fixed4 finalColor = tex2D(_MainTex, i.uv);
 			finalColor.rgb = lerp(finalColor.rgb, _FogColor.rgb, fogDensity);
 			
