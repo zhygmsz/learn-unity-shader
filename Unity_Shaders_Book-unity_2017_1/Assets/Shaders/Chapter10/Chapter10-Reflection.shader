@@ -66,9 +66,15 @@
 				
 				fixed3 ambient = UNITY_LIGHTMODEL_AMBIENT.xyz;
 				
+				//_LightColor0.rgb即为光的颜色，用RGB三分量混合表示
+				//_Color.rgb则是漫反射光照模型里的材质漫反射系数，这里设置的是(1, 1, 1)，其实就是入射光的颜色完整的反射出去，不吸收
+				//假设_Color.rgb设置成(1, 0, 0)，则表示该物体表面只反射完整的红光，完全吸收绿光和蓝光，所以物体表面看起来是偏红色的
 				fixed3 diffuse = _LightColor0.rgb * _Color.rgb * max(0, dot(worldNormal, worldLightDir));
 				
 				// Use the reflect dir in world space to access the cubemap
+				//texCUBE(_Cubemap, i.worldRefl).rgb这一项相当于光的颜色，而这里光的颜色不再是RGB三分量混合，而是由采样立方体纹理所得
+				//_ReflectColor.rgb就是材质的环境映射反射系数
+				//一个物体对不同的光照模型有不同的反射系数
 				fixed3 reflection = texCUBE(_Cubemap, i.worldRefl).rgb * _ReflectColor.rgb;
 				
 				UNITY_LIGHT_ATTENUATION(atten, i, i.worldPos);
