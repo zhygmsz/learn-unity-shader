@@ -83,6 +83,10 @@
 				float2 offset = bump.xy * _Distortion * _RefractionTex_TexelSize.xy * i.scrPos.z;
 				//i.srcPos.z值看效果应该是一个[0,1]的值，可以确定一下。它的值是否就是被规范到了[0,1]区间内呢？如果是的话找具体哪个过程
 				//offset本身是一个偏移值，很小就够了，太大反而效果突兀
+				
+				//该折射模型用的是grabpass，可以考虑换成透射光漫反射
+				//再把反射模型用成环境映射，看下效果
+				
 				i.scrPos.xy = offset + i.scrPos.xy;
 				fixed3 refrCol = tex2D(_RefractionTex, i.scrPos.xy/i.scrPos.w).rgb;
 
@@ -100,7 +104,11 @@
 				//fixed3 worldNormal = normalize(i.worldNormal);
 				//fixed3 reflDir = reflect(-worldViewDir, worldNormal);
 				fixed4 texColor = tex2D(_MainTex, i.uv.xy);
-				fixed3 reflCol = texCUBE(_Cubemap, reflDir).rgb * texColor.rgb;
+				//fixed3 reflCol = texCUBE(_Cubemap, reflDir).rgb * texColor.rgb;
+				//fixed3 reflCol = texColor.rgb;
+				//立方体如果应用了主纹理和法线图，那就是个不透明物体，不应该再应用反射和折射模型
+				//如果想应用反射和折射模型，需要是透明物体，也就需要舍弃掉主纹理采样结果
+				fixed3 reflCol = texCUBE(_Cubemap, reflDir).rgb;
 
 				//当_RefractAmount等于0时，即为只有反射，没有折射
 				//通过观察向量和法线反推出入射光线，再用入射光线对立方体纹理采样，模拟反射效果。

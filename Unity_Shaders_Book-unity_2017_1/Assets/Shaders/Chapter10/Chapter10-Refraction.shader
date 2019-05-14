@@ -5,6 +5,7 @@
 		_RefractAmount ("Refraction Amount", Range(0, 1)) = 1
 		_RefractRatio ("Refraction Ratio", Range(0.1, 1)) = 0.5
 		_Cubemap ("Refraction Cubemap", Cube) = "_Skybox" {}
+		_Gloss ("Gloss", Range(8, 256)) = 20
 	}
 	SubShader {
 		Tags { "RenderType"="Opaque" "Queue"="Geometry"}
@@ -27,6 +28,7 @@
 			float _RefractAmount;
 			fixed _RefractRatio;
 			samplerCUBE _Cubemap;
+			float _Gloss;
 			
 			struct a2v {
 				float4 vertex : POSITION;
@@ -74,10 +76,12 @@
 				fixed3 worldNormal = normalize(i.worldNormal);
 				fixed3 worldLightDir = normalize(UnityWorldSpaceLightDir(i.worldPos));
 				fixed3 worldViewDir = normalize(i.worldViewDir);
+				fixed3 halfDir = normalize(worldLightDir + worldViewDir);
 								
 				fixed3 ambient = UNITY_LIGHTMODEL_AMBIENT.xyz;
 				
 				fixed3 diffuse = _LightColor0.rgb * _Color.rgb * max(0, dot(worldNormal, worldLightDir));
+				fixed3 specular = _LightColor0.rgb * _Color.rgb * pow(saturate(dot(halfDir, worldNormal)), _Gloss);
 				
 				// Use the refract dir in world space to access the cubemap
 				fixed3 refraction = texCUBE(_Cubemap, i.worldRefr).rgb * _RefractColor.rgb;
@@ -85,7 +89,7 @@
 				UNITY_LIGHT_ATTENUATION(atten, i, i.worldPos);
 				
 				// Mix the diffuse color with the refract color
-				fixed3 color = ambient + lerp(diffuse, refraction, _RefractAmount) * atten;
+				fixed3 color = ambient + lerp(diffuse + specular, refraction, _RefractAmount) * atten;
 				
 				return fixed4(color, 1.0);
 			}
