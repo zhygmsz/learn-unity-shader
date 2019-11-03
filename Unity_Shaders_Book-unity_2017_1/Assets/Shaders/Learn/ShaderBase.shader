@@ -60,7 +60,7 @@ Shader "Learn/ShaderBase"
     SubShader
     {
         // 【SubShader Tags】
-        // SubShader的Tags指明渲染引擎如何并何时渲染，只允许出现在SubShader区域内，不允许出现在Pass区域
+        // SubShader的Tags用于控制渲染顺序和其他的SubShader参数，以下Tags只允许出现在SubShader区域内，不允许出现在Pass区域
         Tags
         {
             "RenderType"="Opaque"
@@ -89,23 +89,102 @@ Shader "Learn/ShaderBase"
             // Queue最多到2500都被认为是Opaque物体，优化渲染顺序提升性能。超过2500的Queue被当做Transparent物体并且根据距离排序，由远及近的渲染。
             // 天空盒就在所有Opaque物体和所有Transparent物体之间渲染
 
-            
+            "DisableBatching" = "False"
+            // 批处理多个物体时，这些物体会共用同一个MVP矩阵，所有单个物体的顶点位置在其局部空间下是不能动的，换句话说是对批处理保证物体是静态的
+            // 所以当某些物体的顶点着色器内有顶点位置变换时，需要禁止合批。有三个选项
+            // False：不禁止合批，这也是默认值
+            // True：总是禁止合批，对于那些在顶点着色器内位置变换的物体来说，提前告诉渲染引擎禁止合批，算是一个优化项。
+            // 因为这些物体即使被合批了，真实顶点位置（复制到大mesh后，大mesh里的顶点位置会随顶点着色器变换）和屏幕像素位置也对不上，尤其是在片段着色器内做额外操作的话。
+            // LODFading，主要用于树
+
+            "ForceNoShadowCasting" = "True"
+            // 使用该SubShader渲染的物体将不会产生阴影，大部分情况下用于shader replacement透明物体。还有一种情况是你不想从另一个SubShader里继承shadow pass
+            // 默认值为False
+
+            "IgnoreProjector" = "True"
+            // 忽略Projector（内置投影组件，投影纹理）的影响，一般半透明物体需要设置为True，默认为False
+
+            // "CanUseSpriteAtlas" = "True/False"
+            // 和Sprite有关
+
+            "PreviewType" = "Sphere"
+            // 材质的检视面板最下方的预览界面里，材质的展示方式
+            // Sphere：球方式，默认
+            // Plane：2D方式
+            // Skybox：天空盒方式
         }
-
-
+        
+        // shader LOD
         LOD 100
 
         Pass
         {
-            Tags { "LightMode" = "ForwardBase" }
+            // Pass的Tags控制光照细节（环境光，逐顶点光照，逐像素光照等）。以下Tags只允许出现在Pass区域内，不允许出现在SubShader区域
+            Tags
+            {
+                "LightMode" = "ForwardBase"
+                // LightMode定义该Pass在光照管线里的角色，光照细节
+                // Always：永远渲染，没有光照
+                // ForwardBase：使用前向渲染（Forward Rendering Path），环境光，主方向光，逐顶点光照和球谐光照，以及光照贴图
+                // ForwardAdd：使用前向渲染（Forward Rendering Path），用于额外的逐像素光照计算的灯光，一个灯光一个Add Pass
+                // Deferred：使用延迟渲染（Deferred Rendering Path），填充g-buffer
+                // ShadowCaster：渲染深度信息到shadowmap或depth texture
+                // MotionVectors：用于计算逐物体的运动向量
+                // PrepassBase：用于遗留的延迟渲染
+                // PrepassFinal：用于遗留的延迟渲染
+                // Vertex：用于遗留的逐顶点光照
+                // VertexLMRGBM：用于遗留的逐顶点光照
+                // VertexLM：用于遗留的逐顶点光照。以上遗留不作详细介绍
+
+                "PassFlags" = "OnlyDirectional"
+                // PassFlags可以修改渲染管线往该Pass传递数据的方式
+                // OnlyDirectional：在使用ForwardBase的Pass里，只有主方向光，环境光和lightprobe的数据传递到该Pass里
+                // 意味着不重要灯光的数据不会传递给逐顶点光照或球谐光照的shader变量里，就是说一旦在ForwardBase里使用了该tags，
+                // 在该Pass的shader里，是访问不到逐顶点光照或球谐光照的shader变量的
+
+                "RequireOptions" = "SoftVegetation"
+                // RequireOptions向渲染引擎指明，只有当一些外部条件满足时才渲染该Pass
+                // SoftVegetation：在Quality Window界面开启Soft Vegetation选项时才渲染该Pass
+            }
+
+            // 渲染状态设置
+            Cull Back
+            // 裁剪
+            // Back：裁剪背面的图元，默认值
+            // Front：裁剪正面的图元
+            // Off：不裁剪
+
+            ZWrite On
+            // 该物体的像素是否写入到深度缓冲区
+            // On：写入，渲染不透明物体，默认值
+            // Off：不写入，渲染半透明物体
+
+            ZTest LEqual
+            // 深度测试如何比较
+            // LEqual：小于等于，默认值
+            // Less：小于
+            // Greater：大于
+            // GEqual：大于等于
+            // Equal：等于
+            // Notqual：不等于
+            // Always：永远通过
+
+            //Offset Factor,Units
+            // 控制深度偏移
+
+            //Blend，回头总总结alpha blend和alpha test
 
             CGPROGRAM
+            // CGPROGRAM/ENDCG这一对宏里包含的是HLSL代码，事实上和unity shader无关，是HLSL同时也是CG语言
             #pragma vertex vert
+            // 将vert函数作为顶点着色器
             #pragma fragment frag
+            // 将frag函数作为片段着色器
 
             //#pragma require 2darray
 
             #include "UnityCG.cginc"
+            // TRANSFORM_TEX宏定义在UnityCG.cginc文件里
 
             sampler2D _MainTex;
             float4 _MainTex_ST;
@@ -116,7 +195,13 @@ Shader "Learn/ShaderBase"
             {
                 float4 vertex : POSITION;
                 float2 uv : TEXCOORD0;
+                float3 normal : NORMAL;
+                // 法线是3分量
+                float4 tangent : TANGENT;
+                // 切线是4分量，注意区别
             };
+            // appdata可以用vert函数的参数替代，默认是in类型
+            // out类型的参数传递到frag函数的in类型同名同类型参数里，他们的本质是硬件寄存器编号 
 
             struct v2f
             {
@@ -128,6 +213,7 @@ Shader "Learn/ShaderBase"
             {
                 v2f o;
                 o.vertex = UnityObjectToClipPos(v.vertex);
+                // UnityObjectToClipPos方法在UnityShaderUtilities文件里，该文件总是会被包含进所有的unity shader里去
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
                 return o;
             }
