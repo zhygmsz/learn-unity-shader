@@ -125,7 +125,7 @@ Shader "Learn/ShaderBase"
                 "LightMode" = "ForwardBase"
                 // LightMode定义该Pass在光照管线里的角色，光照细节
                 // Always：永远渲染，没有光照
-                // ForwardBase：使用前向渲染（Forward Rendering Path），环境光，主方向光，逐顶点光照和球谐光照，以及光照贴图
+                // ForwardBase：使用前向渲染（Forward Rendering Path），环境光，主方向光，逐顶点光照和球谐光照，以及光s照贴图
                 // ForwardAdd：使用前向渲染（Forward Rendering Path），用于额外的逐像素光照计算的灯光，一个灯光一个Add Pass
                 // Deferred：使用延迟渲染（Deferred Rendering Path），填充g-buffer
                 // ShadowCaster：渲染深度信息到shadowmap或depth texture
@@ -176,10 +176,13 @@ Shader "Learn/ShaderBase"
 
             CGPROGRAM
             // CGPROGRAM/ENDCG这一对宏里包含的是HLSL代码，事实上和unity shader无关，是HLSL同时也是CG语言
+            // unity提供常用的方法和宏定义
             #pragma vertex vert
             // 将vert函数作为顶点着色器
             #pragma fragment frag
             // 将frag函数作为片段着色器
+
+            // 总结声明变体的两种方式
 
             //#pragma require 2darray
 
@@ -194,36 +197,73 @@ Shader "Learn/ShaderBase"
             struct appdata
             {
                 float4 vertex : POSITION;
-                float2 uv : TEXCOORD0;
-                float3 normal : NORMAL;
+                // 在vert的输入里，POSITION顶点局部空间位置，用float
+                half2 uv0 : TEXCOORD0;
+                half2 uv1 : TEXCOORD1;
+                // TEXCOORD0-N，用half【-6000, 6000】
+                half3 normal : NORMAL;
                 // 法线是3分量
-                float4 tangent : TANGENT;
+                half4 tangent : TANGENT;
                 // 切线是4分量，注意区别
+                fixed4 vertexColor : COLOR;
+                // vert的输入里COLOR表示顶点颜色，用fixed【-2, 2】
+                // 在vert输出/frag输入里，COLOR表示寄存器编号，没有实际语义
             };
-            // appdata可以用vert函数的参数替代，默认是in类型
-            // out类型的参数传递到frag函数的in类型同名同类型参数里，他们的本质是硬件寄存器编号 
 
             struct v2f
             {
-                float2 uv : TEXCOORD0;
-                float4 vertex : SV_POSITION;
+                //float4 vertex : SV_POSITION;
+                // 在顶点着色器输出/片段着色器输入里，SV_POSITION等价于SV_Position，顶点的齐次裁剪空间位置，用于屏幕映射对应到某个像素，以及深度值
+                half2 uv0 : TEXCOORD0;
+                half2 uv1 : TEXCOORD1;
+                fixed4 diffuseColor : TEXCOORD2;
+                fixed4 vertexColor : TEXCOORD3;
+                // unity建议，为了更好的跨平台，vert的输出/frag的输入最好使用TEXCOORDn，不用COLORn
             };
-
-            v2f vert (appdata v)
+            
+            
+            v2f vert (appdata v, out float4 pos : SV_POSITION)
             {
-                v2f o;
-                o.vertex = UnityObjectToClipPos(v.vertex);
+                v2f o = (v2f)0;
+                //o.vertex = UnityObjectToClipPos(v.vertex);
+                pos = UnityObjectToClipPos(v.vertex);
                 // UnityObjectToClipPos方法在UnityShaderUtilities文件里，该文件总是会被包含进所有的unity shader里去
-                o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+                o.uv0 = TRANSFORM_TEX(v.uv0, _MainTex);
+                o.uv1 = o.uv0;
                 return o;
             }
 
+            // SV_XXX是D3D 10引入的系统值语义，用于区分D3D 9，10往后都用SV_XXX
+            // SV_Target就是其中一个，就是COLOR意思，意味颜色，HLSL目前最多支持8个渲染目标，所以SV_Target0-7，0的话可以不写
+            // 其实，我们常写的SV_Target都是SV_Target0的缩写版
+            // SV_Depth：默认情况系片段使用光栅化阶段插值出的深度值，但某些效果需要在frag里重写深度值
+            // 但这会打破GPU对深度缓冲区的优化，开销类似于alpha test（在frag里使用clip函数）。最好在所有不透明物体渲染后再渲染重写深度值的物体
             fixed4 frag (v2f i) : SV_Target
             {
                 // sample the texture
-                fixed4 col = tex2D(_MainTex, i.uv);
+                fixed4 col = tex2D(_MainTex, i.uv0);
                 return col;
             }
+            
+
+            // 函数的in/out方式在vert和frag之间传递参数
+            /*
+            // vert和frag也是普通的cg/HLSL函数，函数的参数传递可以用in/out/inout来修饰，默认的是in，in可以省略，out/inout不能省略
+            // vert函数里in参数列表相当于appdata结构体展开，out参数列表相当于v2f结构体展开
+            float4 vert(float4 vertex : POSITION, float2 vertUV : TEXCOORD0, out float2 fragUV : TEXCOORD0) : SV_POSITION
+            {
+                fragUV = TRANSFORM_TEX(vertUV, _MainTex);
+                return UnityObjectToClipPos(vertex);
+            }
+
+            // vert函数里out修饰的参数和frag函数里in修饰的参数是对应的，类型和语义相同（本质是寄存器编号）的才传递
+            fixed4 frag(float2 uv : TEXCOORD0) : SV_Target
+            {
+                //return fixed4(1, 1, 0, 1);
+                fixed4 col = tex2D(_MainTex, uv);
+                return col;
+            }
+            */
             ENDCG
         }
     }
