@@ -6,6 +6,7 @@ Shader "Learn/ShaderBase"
     // 该区域内的属性对外显示在材质检视面板上，方便调节。对内可以影响同名的uniform变量，或者说是同名uniform变量的对外（材质检视面板）代理
     // 该区域内的属性，如果没有一个同名uniform与其对应，则该属性毫无意义
     // uniform变量如果不需要暴露在材质检视面板上，可以不在该区域声明同名属性，只能在程序里动态设置，同时这些变量也不会被保存到材质里
+    // 矩阵和数组只能通过代码动态设置，不能序列化保存，因为这两类数据不能在属性区域定义
     // 属性区域是shader的一部分，任何修改都会保存(序列化)在材质里
     // 一个Shader只有一个Properties区域
     Properties
@@ -191,8 +192,22 @@ Shader "Learn/ShaderBase"
 
             sampler2D _MainTex;
             float4 _MainTex_ST;
+            uniform sampler3D _3DTex;
+            uniform samplerCUBE _Cube;
+            // 以上是三种纹理属性对应的HLSL变量类型
+
+            uniform float _TestFloat1;
+            uniform float _TestInt1;
+            uniform half _TestRange1;
+            // 属性区域是属于ShaderLab范畴，是unity提供的便利手段。float/half/fixed在类型上是等效的，只是根据取值范围和精度不同，适用于不同情景的数据描述
+
+            uniform float4 _TestColor1;
+            uniform half4 _TestVector1;
+            // 属性里的Color和Vector都对应HLSL里的float4/half4/fixed4，必须是四分量
 
             uniform float _TestFloat2;
+            // 普通的uniform变量，其uniform修饰符是可以省略的
+
 
             struct appdata
             {
@@ -207,7 +222,6 @@ Shader "Learn/ShaderBase"
                 // 切线是4分量，注意区别
                 fixed4 vertexColor : COLOR;
                 // vert的输入里COLOR表示顶点颜色，用fixed【-2, 2】
-                // 在vert输出/frag输入里，COLOR表示寄存器编号，没有实际语义
             };
 
             struct v2f
@@ -218,10 +232,15 @@ Shader "Learn/ShaderBase"
                 half2 uv1 : TEXCOORD1;
                 fixed4 diffuseColor : TEXCOORD2;
                 fixed4 vertexColor : TEXCOORD3;
-                // unity建议，为了更好的跨平台，vert的输出/frag的输入最好使用TEXCOORDn，不用COLORn
+                // unity建议，为了更好的跨平台，vert的输出/frag的输入最好使用TEXCOORDn语义，不用COLORn
+                // 在vert输出/frag输入里，COLOR表示寄存器编号，没有实际语义
             };
             
-            
+            // unity的Mesh组件里的顶点数据是作为顶点着色器函数的输入，并且每个输入数据都有一个语义修饰，用来指明是位置，颜色，法线，切线，UV坐标等
+            // vert的输入可以罗列在函数参数列表里，但更通用的是组织在一个结构体里，unity在UnityCG.cginc文件里提供了
+            // appdata_base，position,normal,uv0
+            // appdata_tan，相比base多了tangent
+            // appdata_full，相比tan多了uv1-uv3（额外多出3套纹理坐标）
             v2f vert (appdata v, out float4 pos : SV_POSITION)
             {
                 v2f o = (v2f)0;
