@@ -187,6 +187,9 @@ Shader "Learn/ShaderBase"
 
             //#pragma require 2darray
 
+            // HLSLSupport.cginc 用于跨平台的宏和定义
+            // UnityShaderVariables.cginc 
+            // 两个文件是自动包含到每一个shader文件里
             #include "UnityCG.cginc"
             // TRANSFORM_TEX宏定义在UnityCG.cginc文件里
 
