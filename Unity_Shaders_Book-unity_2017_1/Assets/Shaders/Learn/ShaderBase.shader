@@ -266,7 +266,8 @@ Shader "Learn/ShaderBase"
                 fixed4 col = tex2D(_MainTex, i.uv0);
                 return col;
             }
-            
+
+            // _WorldSpaceLightPos0在ForwardBase下一定是方向光的反方向
 
             // 函数的in/out方式在vert和frag之间传递参数
             /*
